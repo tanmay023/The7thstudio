@@ -15,8 +15,7 @@ import {
   Divider,
 } from "@mui/material";
 import { Instagram, LinkedIn, Phone, Email, LocationOn } from "@mui/icons-material";
-import { db } from "../firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import axios from "axios";
 
 const Contact = () => {
   const [loading, setLoading] = useState(false);
@@ -30,17 +29,20 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.name || !formData.email || !formData.message) {
+      setSnackbar({ open: true, message: "Please fill all required fields!", severity: "warning" });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await addDoc(collection(db, "contactMessages"), {
-        ...formData,
-        timestamp: serverTimestamp(),
-      });
+      await axios.post("http://localhost:5000/contact", formData);
       setSnackbar({ open: true, message: "Message sent successfully!", severity: "success" });
       setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error) {
-      console.error("Firestore Error:", error);
+      console.error("Error submitting message:", error);
       setSnackbar({ open: true, message: "Failed to send message. Please try again.", severity: "error" });
     } finally {
       setLoading(false);
@@ -87,7 +89,7 @@ const Contact = () => {
                       onChange={handleInputChange}
                       variant="outlined"
                       fullWidth
-                      required
+                      required={field !== "phone"}
                       multiline={field === "message"}
                       rows={field === "message" ? 4 : 1}
                       sx={{
@@ -111,7 +113,7 @@ const Contact = () => {
                 <Typography variant="h6" gutterBottom>Location</Typography>
                 <Box sx={{ width: "100%", height: "400px", borderRadius: 1, overflow: "hidden" }}>
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14961.144076242472!2d78.1093265582969!3d20.37109369789724!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd3e9003a86f851%3A0xe4969a92ea196a1c!2sThe%207th%20studio%20%7C%20Shreyash%20M%20S%20Architect%20%7C!5e0!3m2!1sen!2sin!4v1739220123385!5m2!1sen!2sin"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14961.144076242472!2d78.1093265582969!3d20.37109369789724!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd3e9003a86f851%3A0xe4969a92ea196a1c!2sThe%207th%20studio%20%7C%20Shreyash%20M%20S%20Architect%20%7C!5e0!3m2!1sen!2sin!4v1739220123385!5m2!1sen!2sin."
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
@@ -125,10 +127,6 @@ const Contact = () => {
               <Grid item xs={12}>
                 <Divider sx={{ my: 3, backgroundColor: "white" }} />
                 <Typography variant="h6" gutterBottom>Contact Details</Typography>
-                <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-                  <LocationOn color="primary" />
-                  <Typography>Bhagyodya Society, Plot no 20, Hanuman Nagar, Yavatmal</Typography>
-                </Box>
                 <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
                   <Phone color="primary" />
                   <Typography>+91 8378028851, +91 9130110547</Typography>
@@ -160,7 +158,3 @@ const Contact = () => {
 };
 
 export default Contact;
-
-
-
-
