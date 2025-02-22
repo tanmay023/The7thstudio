@@ -116,7 +116,29 @@ app.get("/getMedia", async (req, res) => {
     }
   });
   
+  // ✅ Delete a media file by ID
+  app.delete("/deleteMedia/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      console.log("🗑 Attempting to delete media with ID:", id); // Debugging log
   
+      const deletedMedia = await Media.findByIdAndDelete(id);
+  
+      if (!deletedMedia) {
+        console.error("❌ Media not found:", id);  // Log if ID doesn't exist
+        return res.status(404).json({ error: "Media not found." });
+      }
+  
+      console.log("✅ Media deleted successfully:", deletedMedia);
+      res.json({ message: "✅ Media deleted successfully!" });
+    } catch (error) {
+      console.error("❌ Server Error deleting media:", error);
+      res.status(500).json({ error: "Failed to delete media. Please try again later." });
+    }
+  });
+  
+ 
   
 
 // ✅ Start the server

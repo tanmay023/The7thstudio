@@ -25,21 +25,29 @@ import logo from '../assets/logo.png';
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(localStorage.getItem("isAdmin") === "true");
   const navigate = useNavigate();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
-    setIsAdmin(localStorage.getItem("isAdmin") === "true");
+    const checkAdminStatus = () => {
+      setIsAdmin(localStorage.getItem("isAdmin") === "true");
+    };
+
+    checkAdminStatus();
+    window.addEventListener("storage", checkAdminStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkAdminStatus);
+    };
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("isAdmin");
-    setIsAdmin(false);
+    window.dispatchEvent(new Event("storage")); // ✅ Instantly updates Navbar
     navigate("/");
-    window.location.reload();
   };
 
   const menuItems = [
@@ -120,7 +128,7 @@ const Navbar = () => {
                   </Button>
                 </Fade>
               ))}
-              {isAdmin && (
+              {isAdmin ? (
                 <Fade in={true} timeout={800}>
                   <Button
                     component={Link}
@@ -133,17 +141,16 @@ const Navbar = () => {
                     Dashboard
                   </Button>
                 </Fade>
-              )}
-              {!isAdmin ? (
-                <Fade in={true} timeout={800}>
-                  <Button component={Link} to="/login" variant="outlined" color="inherit" sx={{ fontFamily: 'Roboto, sans-serif' }}>
-                    Login
-                  </Button>
-                </Fade>
               ) : (
                 <Fade in={true} timeout={800}>
-                  <Button onClick={handleLogout} variant="outlined" color="error" sx={{ fontFamily: 'Roboto, sans-serif' }}>
-                    Logout
+                  <Button
+                    component={Link}
+                    to="/login"
+                    variant="outlined"
+                    color="inherit"
+                    sx={{ fontFamily: 'Roboto, sans-serif' }}
+                  >
+                    Login
                   </Button>
                 </Fade>
               )}
